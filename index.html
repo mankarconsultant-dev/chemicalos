@@ -316,7 +316,7 @@ function rTrack(){
   <div class="acts"><button class="btn">Save tracking</button></div></form>`;
 }
 async function saveTrack(e){e.preventDefault();const f=new FormData(e.target),g=k=>(f.get(k)||"").toString().trim(),r=S.rfqs.find(x=>x.id===trkId);
-  const st=g("status"),conf=!!f.get("conf");if(!r||r.demo){toast("Only your live RFQs can be updated.");return}
+  const st=g("status"),conf=!!f.get("conf");if(!r||r.demo){toast("Only your live RFQs can be updated.");return}if(r.db_status==="cancelled"){toast("Cancelled RFQs cannot be updated.");return}
   if((st==="Bulk requirement confirmed"||st==="Ordered")&&!conf){toast("Tick the confirmation box only once the buyer has confirmed the bulk requirement.");return}
   const track={sample:g("sample"),test:g("test"),tnotes:g("tnotes"),conf,next:g("next"),fdate:g("fdate")};const dbStatus=r.db_status==="closed"||st==="Closed"?"closed":"open";
   try{const {error}=await sb.from("rfqs").update({status:dbStatus,metadata:{cas:r.cas,grade:r.grade,spec:r.spec,docs:r.docs||[],pub:!!r.pub,buyer_name:r.buyer,track,workflow_status:st}}).eq("id",r.id);if(error)throw error;r.status=st;r.db_status=dbStatus;r.track=track;log(r.chem+": "+st);save();recordActivity("rfq.tracking_updated","RFQ tracking updated: "+r.chem,"rfq",r.id,{workflow_status:st});toast("RFQ tracking saved to ChemicalOS");rTrack()}catch(e){backendError(e)}}
