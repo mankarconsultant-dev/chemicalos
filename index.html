@@ -316,12 +316,14 @@ nav button.on::after{content:"";position:absolute;left:14px;right:14px;bottom:-1
 <body>
 <header class="top"><div class="wrap">
   <a class="logo" onclick="go('home')"><img class="lg" id="lg0" alt="ChemicalOS logo"><b>Chemical<i>OS</i></b></a>
-  <div class="hb"><button class="btn sm ghost" onclick="go('acct')" aria-label="Account"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span class="al">Account</span></button><button class="btn sm sec" onclick="go('listings')">Sell</button></div>
+  <div class="hb"><button class="btn sm ghost" onclick="go('acct')" aria-label="Account"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span class="al">Account</span></button><button class="btn sm sec" onclick="go('sellhome')">Sell</button></div>
   <form class="hs" onsubmit="hs(event)"><div class="sw"><input id="hq" placeholder="Search chemicals, CAS numbers, suppliers" aria-label="Search chemicals"><button class="sbtn" aria-label="Search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button></div><button type="button" class="btn sm pq" onclick="go('buyer')">Post Requirement</button></form>
 </div><div id="catbar" class="catbar"></div></header>
 <nav id="nav"></nav>
 <main>
   <section id="v-home"></section>
+  <section id="v-buyhome" class="hide"></section>
+  <section id="v-sellhome" class="hide"></section>
   <section id="v-market" class="hide"></section>
   <section id="v-auth" class="hide"></section>
   <section id="v-sup" class="hide"></section>
@@ -413,9 +415,9 @@ async function initBackend(){if(!SB_ON){toast("Supabase client could not load.")
 
 function log(m){S.act.unshift({t:Date.now(),m});S.act=S.act.slice(0,30)}
 let tt;function toast(m){const t=$("#toast");t.textContent=m;t.classList.remove("hide");clearTimeout(tt);tt=setTimeout(()=>t.classList.add("hide"),2800)}
-const VIEWS=[["home","Home"],["market","Browse"],["dash","Dashboard"],["buyer","Buyer"],["supplier","Supplier"],["listings","Listings"],["compare","Compare"],["track","Track"],["catalog","Catalog"],["data","Data"]];
+const VIEWS=[["home","Home"],["buyhome","Buyer portal"],["sellhome","Seller portal"],["market","Browse"],["dash","Dashboard"],["buyer","Buyer"],["supplier","Supplier"],["listings","Listings"],["compare","Compare"],["track","Track"],["catalog","Catalog"],["data","Data"]];
 let cur="market",cmpRfq=null,sortBy="price",prefill=null,qPre=null;
-function go(v){cur=v;[...VIEWS,["auth"],["sup"],["acct"]].forEach(([k])=>$("#v-"+k).classList.toggle("hide",k!==v));renderNav();renderCat();({home:rHome,auth:rAuth,sup:rSup,acct:rAcct,market:rMarket,listings:rListings,dash:rDash,track:rTrack,buyer:rBuyer,supplier:rSupplier,compare:rCompare,catalog:rCatalog,data:rData})[v]();window.scrollTo(0,0)}
+function go(v){cur=v;[...VIEWS,["auth"],["sup"],["acct"]].forEach(([k])=>$("#v-"+k).classList.toggle("hide",k!==v));renderNav();renderCat();({home:rHome,buyhome:rBuyHome,sellhome:rSellHome,auth:rAuth,sup:rSup,acct:rAcct,market:rMarket,listings:rListings,dash:rDash,track:rTrack,buyer:rBuyer,supplier:rSupplier,compare:rCompare,catalog:rCatalog,data:rData})[v]();window.scrollTo(0,0)}
 const qCount=id=>S.quotes.filter(q=>q.rfq===id).length;
 const rfqName=id=>{const r=S.rfqs.find(x=>x.id===id);return r?r.chem:"(removed RFQ)"};
 function rfqRow(r,btns){return `<div class="item"><div><b>${esc(r.chem)}</b>${r.demo?'<span class="tag demo">'+(r.scn?"test scenario":"fictional")+'</span>':""}<small>${esc(r.qty)} ${esc(r.unit)} · ${esc(r.loc||"location not set")} · needed ${esc(r.date||"date not set")} · ${qCount(r.id)} quote(s) · ${esc(r.status||"Open for quotes")}</small></div><div class="acts" style="margin:0">${btns}</div></div>`}
@@ -553,7 +555,7 @@ const stat=l=>l.demo?'<span class="tag demo">Sample · fictional</span>':`<span 
 const plabel=l=>l.restricted!=="Standard"?'<span class="rfq">RFQ only</span>':(l.ptype==="fixed"||l.ptype==="indicative")&&l.price>0?`<span class="pr">${l.ptype==="indicative"?"≈ ":""}${esc(money(l.price,l.cur))}<small> / ${esc(l.unit)}</small></span>`:'<span class="rfq">Request a Quote</span>';
 function card(l){const ln=[l.moq!=null&&"MOQ "+l.moq+" "+l.unit,l.lead!=null&&"Lead time "+l.lead+" d"].filter(Boolean).join(" · ");
   return `<div class="pc" onclick="openL('${l.id}')"><div class="th">${l.demo?'<span class="tag demo">Sample · fictional</span>':""}${canDirect(l)?'<span class="tag dir">Direct order</span>':""}${ICON}</div><div class="pi"><b class="nm">${esc(l.name)}</b>${l.grade||l.pack?`<div class="mut sm">${esc([l.grade,l.pack].filter(Boolean).join(" · "))}</div>`:""}${ln?`<div class="sm">${esc(ln)}</div>`:""}<div class="pb">${plabel(l)}</div>${l.ptype==="fixed"&&l.pdate?`<div class="mut xs">Price confirmed ${esc(l.pdate)}</div>`:""}<div class="ps">${esc(l.sup)}</div>${l.cover?`<div class="mut xs">Delivers: ${esc(l.cover)}</div>`:""}${l.demo?"":stat(l)}</div></div>`}
-const GR={buyer:["Buyer workspace",[["dash","Overview"],["buyer","Post requirement"],["compare","Compare quotes"],["track","Track sourcing"]]],supplier:["Supplier workspace",[["listings","My listings"],["supplier","Quote on RFQs"]]],tools:["Tools",[["catalog","Chemical reference"],["data","Data & backup"]]]};
+const GR={buyer:["Buyer portal",[["buyhome","Overview"],["market","Find chemicals"],["dash","Buying dashboard"],["buyer","Post requirement"],["compare","Compare quotes"],["track","Track orders"]]],supplier:["Seller portal",[["sellhome","Overview"],["listings","My products"],["supplier","Buyer RFQs"]]],tools:["Tools",[["catalog","Chemical reference"],["data","Data & backup"]]]};
 function renderNav(){const g=Object.values(GR).find(x=>x[1].some(t=>t[0]===cur)),n=$("#nav");
   if(!g){n.classList.add("hide");n.innerHTML="";return}
   n.classList.remove("hide");n.innerHTML=`<button class="bk" onclick="go('home')">← Marketplace</button><span class="gl">${g[0]}</span>`+g[1].map(([k,l])=>`<button class="${k===cur?"on":""}" onclick="go('${k}')">${l}</button>`).join("")}
@@ -622,7 +624,7 @@ const LOGO="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAACcCAMAAADPqVDJAA
 const ICON='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/></svg>';
 let SUPN=[];
 function hs(e){e.preventDefault();mk.q=$("#hq").value;mk.det=null;go("market")}
-function renderCat(){$("#catbar").innerHTML=`<button class="${mk.cat?"":"on"}" onclick="mk.cat='';mk.det=null;go('market')">All</button>`+CATS.map(c=>`<button class="${mk.cat===c?"on":""}" onclick="mk.cat='${c}';mk.det=null;go('market')">${c}</button>`).join("")}
+function renderCat(){const bar=$("#catbar"),show=["buyhome","market"].includes(cur);bar.classList.toggle("hide",!show);if(!show){bar.innerHTML="";return;}bar.innerHTML=`<button class="${mk.cat?"":"on"}" onclick="mk.cat='';mk.det=null;go('market')">All</button>`+CATS.map(c=>`<button class="${mk.cat===c?"on":""}" onclick="mk.cat='${c}';mk.det=null;go('market')">${c}</button>`).join("")}
 function supGo(i){mk.q=SUPN[i];mk.det=null;go("market")}
 function supData(){const sup={};LS().forEach(l=>{const s=sup[l.sup]||(sup[l.sup]={n:0,demo:true,v:false,first:l.created});s.n++;s.first=Math.min(s.first,l.created);s.v=s.v||isV(l);s.demo=s.demo&&l.demo});SUPN=Object.keys(sup).sort((a,b)=>(sup[a].demo-sup[b].demo)||sup[b].first-sup[a].first);return sup}
 const empty=(t,m,x)=>`<div class="empty"><span class="ci">${ICON}</span><div><b>${t}</b><div class="mut">${m}</div><div class="acts" style="margin-top:8px"><button class="btn sm" onclick="go('listings')">List a product</button><button class="btn sm sec" onclick="go('buyer')">Post Requirement</button>${x||""}</div></div></div>`;
