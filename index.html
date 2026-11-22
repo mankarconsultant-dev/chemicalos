@@ -266,6 +266,50 @@ button, .card, .pc, .cat{ -webkit-font-smoothing:antialiased }
  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
 
+
+/* Medium-motion interaction layer: polished, restrained, and accessible */
+@keyframes cos-view-in{
+ from{opacity:0;transform:translateY(9px);filter:blur(2px)}
+ to{opacity:1;transform:translateY(0);filter:blur(0)}
+}
+@keyframes cos-orb-drift{
+ 0%,100%{transform:translate3d(0,0,0) scale(1)}
+ 50%{transform:translate3d(-18px,14px,0) scale(1.06)}
+}
+@keyframes cos-soft-glow{
+ 0%,100%{box-shadow:0 12px 34px rgba(30,55,95,.055)}
+ 50%{box-shadow:0 16px 42px rgba(48,101,190,.09)}
+}
+main section:not(.hide){animation:cos-view-in .42s cubic-bezier(.2,.75,.25,1) both}
+.wel::after{animation:cos-orb-drift 11s ease-in-out infinite}
+.wel{animation:cos-soft-glow 9s ease-in-out infinite}
+.band,.card,.pc,.cat,.flt,.cta{transition:transform .22s cubic-bezier(.2,.75,.25,1),border-color .22s ease,box-shadow .22s ease,background-color .22s ease}
+main section:not(.hide) .grid>.card,
+main section:not(.hide) .grid>.pc,
+main section:not(.hide) .grid>.cat,
+main section:not(.hide) .pg>.pc{
+ animation:cos-view-in .46s cubic-bezier(.2,.75,.25,1) both
+}
+main section:not(.hide) .grid>*:nth-child(2),
+main section:not(.hide) .pg>*:nth-child(2){animation-delay:.045s}
+main section:not(.hide) .grid>*:nth-child(3),
+main section:not(.hide) .pg>*:nth-child(3){animation-delay:.09s}
+main section:not(.hide) .grid>*:nth-child(4),
+main section:not(.hide) .pg>*:nth-child(4){animation-delay:.135s}
+button:active:not(:disabled),.btn:active:not(:disabled){transform:translateY(1px) scale(.985)}
+nav button{position:relative}
+nav button.on::after{content:"";position:absolute;left:14px;right:14px;bottom:-1px;height:2px;border-radius:2px;background:linear-gradient(90deg,#3973ec,#67a2f8);animation:cos-view-in .24s ease both}
+.logo img{filter:drop-shadow(0 3px 7px rgba(42,91,180,.12))}
+@media(max-width:700px){
+ .wel{animation:none}
+ .wel::after{animation-duration:14s}
+}
+@media(prefers-reduced-motion:reduce){
+ main section:not(.hide),main section:not(.hide) .grid>*,main section:not(.hide) .pg>*,
+ .wel,.wel::after,nav button.on::after{animation:none!important}
+ .band,.card,.pc,.cat,.flt,.cta,button{transition:none!important}
+}
+
 </style>
 
 </head>
