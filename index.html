@@ -294,6 +294,7 @@ function rCompare(){
   ${line("Documents",x=>x.q.docs.length?esc(x.q.docs.join(", ")):m)}
   ${line("Valid for",x=>x.q.val?esc(x.q.val)+" days":m)}
   ${line("Checks",x=>x.fl.length?x.fl.map(f=>`<span class="fl ${f[0]}">${esc(f[1])}</span>`).join(""):'<span class="ok">No issues found</span>')}
+  ${line("Accept quote",x=>!x.q.demo&&r.buyer_id===currentUser?.id&&x.q.status==="submitted"?"<button class=\"btn sm\" onclick=\"acceptQuote(\'"+x.q.id+"\')\">Accept</button>":"—")}
   </table></div><p class="mut" style="font-size:13px">Estimated total = unit price × quantity + freight, then extra GST if stated (applied to goods and freight, which is an assumption). It is shown only when freight is known. Prices in g, kg and MT are converted; litres are never converted to weight. MOQ is assumed to be in the RFQ unit. Offers in different currencies are not converted, and offers with a red flag are never marked as the lowest comparable total. Cheapest is not always best: check grade, documents and terms.</p>`:'<div class="card" style="margin-top:10px">No quotations yet for this RFQ.</div>'}`;
 }
 const ST=["Open for quotes","Sample requested","Samples sent","Testing","Bulk requirement confirmed","Ordered","Closed"],TS=["Not tested yet","Passed","Failed","Needs retest"];
