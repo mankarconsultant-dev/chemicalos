@@ -3,6 +3,7 @@ name: Validate ChemicalOS frontend
 on:
   push:
     branches:
+      - main
       - feature/chemicalos-supabase-live
   pull_request:
     branches:
