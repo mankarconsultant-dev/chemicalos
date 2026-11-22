@@ -220,7 +220,7 @@ function rBuyer(){
   <div class="acts"><button class="btn">Create RFQ</button></div></form>
   <div class="card"><h3>Your RFQs</h3>${S.rfqs.map(r=>rfqRow(r,`<button class="btn sm" onclick="cmpRfq='${r.id}';go('compare')">Compare</button><button class="btn sm sec" onclick="trkId='${r.id}';go('track')">Track</button><button class="btn sm danger" onclick="delRfq('${r.id}')">Delete</button>`)).join("")||'<p class="mut">No RFQs yet.</p>'}</div></div>`;
 }
-function addRfq(e){e.preventDefault();const f=new FormData(e.target),g=k=>(f.get(k)||"").toString().trim();
+async function addRfq(e){e.preventDefault();const f=new FormData(e.target),g=k=>(f.get(k)||"").toString().trim();
   const cas=g("cas");if(cas&&!/^\d{2,7}-\d{2}-\d$/.test(cas)){toast("CAS format looks wrong. Use digits like 56-81-5, or leave it blank.");return}
   const qty=num(g("qty"));if(!g("chem")||!qty||qty<=0){toast("Enter a chemical name and a quantity above zero.");return}
   if(!currentUser){toast("Please sign in as a buyer first.");go("auth");return;}if(!hasRole("buyer")){toast("Your account role does not allow buyer RFQs.");return;}
@@ -244,7 +244,7 @@ function rSupplier(){
   <div class="acts"><button class="btn">Submit quotation</button></div></form>
   <div class="card"><h3>Open requirements</h3>${S.rfqs.map(r=>`<div class="item"><div><b>${esc(r.chem)}</b>${r.cas?` <span class="mut">${esc(r.cas)}</span>`:""}<small>${esc(r.grade||"grade not set")} · ${esc(r.qty)} ${esc(r.unit)} · ${esc(r.loc||"")}</small><small>${esc(r.spec)}</small></div></div>`).join("")}</div></div>`:'<div class="card"><p>No RFQs to quote on yet. Create one in the Buyer tab first.</p></div>');
 }
-function addQuote(e){e.preventDefault();const f=new FormData(e.target),g=k=>(f.get(k)||"").toString().trim();
+async function addQuote(e){e.preventDefault();const f=new FormData(e.target),g=k=>(f.get(k)||"").toString().trim();
   const price=num(g("price"));if(!g("sup")||price==null||price<=0){toast("Enter a supplier name and a price above zero.");return}
   const q={id:uid(),rfq:g("rfq"),sup:g("sup"),grade:g("grade"),price,cur:g("cur"),moq:num(g("moq")),lead:num(g("lead")),ft:g("ft"),fa:num(g("fa")),pay:g("pay"),docs:f.getAll("d"),pu:g("pu"),tx:g("tx"),val:num(g("val")),notes:g("notes"),demo:false,created:Date.now()};
   if(!currentUser){toast("Please sign in as a supplier first.");go("auth");return;}if(!isApprovedSupplier()){toast("Supplier accounts must be approved before submitting quotations.");go("acct");return;}
@@ -389,7 +389,7 @@ function rListings(){
   ${l.demo?'<small>Sample listings cannot be marked verified.</small>':`<form class="row" style="margin-top:8px" onsubmit="recVerif(event,'${l.id}')"><select name="v">${VS.map(s=>`<option ${s===vs(l)?"selected":""}>${s}</option>`).join("")}</select><input name="n" placeholder="What did you check?" value="${esc(l.verif&&l.verif.note)}"><button class="btn sm sec">Record</button></form>`}</div>`).join("")||'<p class="mut">No listings yet.</p>'}<p class="mut" style="font-size:13px">Uploading or listing a document is not verification. Record “Verified” only after you actually checked something and write what it was.</p></div>
   <div class="card" style="margin-top:12px"><h3>Order requests</h3><p class="mut" style="font-size:13px">A draft is not an order. Statuses are manual records you update after real events.</p>${OS().map(x=>`<div class="item" style="display:block"><b>${esc(x.lname)}</b>${x.demo?'<span class="tag demo">Sample · fictional</span>':""}<small>${esc(x.qty+" "+x.unit)} · subtotal ${esc(money(x.sub,x.cur))} · ${esc(x.sup)} · ${fmtD(x.created)}</small><select onchange="setOrd('${x.id}',this.value)">${OST.map(s=>`<option ${s===x.status?"selected":""}>${s}</option>`).join("")}</select></div>`).join("")||'<p class="mut">None yet.</p>'}</div></div></div>`;
 }
-function saveListing(e){e.preventDefault();const f=new FormData(e.target),g=k=>(f.get(k)||"").toString().trim(),o=LS().find(x=>x.id===edL),cas=g("cas"),pt=g("ptype"),price=num(g("price"));
+async function saveListing(e){e.preventDefault();const f=new FormData(e.target),g=k=>(f.get(k)||"").toString().trim(),o=LS().find(x=>x.id===edL),cas=g("cas"),pt=g("ptype"),price=num(g("price"));
   if(!g("name")||!g("sup")){toast("Product name and supplier name are required.");return}if(!currentUser){toast("Please sign in as a supplier first.");go("auth");return}if(!isApprovedSupplier()){toast("Supplier approval is required before saving listings.");go("acct");return}
   if(cas&&!/^\d{2,7}-\d{2}-\d$/.test(cas)){toast("CAS format looks wrong, e.g. 56-81-5.");return}
   if(pt!=="quote"&&!(price>0)){toast("Enter a price above zero, or choose Quote required.");return}
